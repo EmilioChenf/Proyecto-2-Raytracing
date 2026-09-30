@@ -3,7 +3,7 @@ use crate::{
     geometry::Aabb,
     lighting::Light,
     material::rgb,
-    math::Vec3,
+    math::{Ray, Vec3},
 };
 
 use super::{install_palette, Scene, Skybox, VoxelBuilder};
@@ -12,12 +12,56 @@ use super::{install_palette, Scene, Skybox, VoxelBuilder};
 pub struct SelectionTarget {
     pub character: CharacterKind,
     pub bounds: Aabb,
+    pedestal_index: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct CharacterSelection {
     pub scene: Scene,
     pub targets: Vec<SelectionTarget>,
+    hovered: Option<CharacterKind>,
+    base_material: usize,
+    highlight_material: usize,
+}
+
+impl CharacterSelection {
+    #[must_use]
+    pub fn hovered(&self) -> Option<CharacterKind> {
+        self.hovered
+    }
+
+    #[must_use]
+    pub fn pick(&self, ray: &Ray) -> Option<CharacterKind> {
+        self.targets
+            .iter()
+            .filter_map(|target| {
+                target
+                    .bounds
+                    .intersect(ray, 0.001, f32::INFINITY)
+                    .map(|hit| (hit.distance, target.character))
+            })
+            .min_by(|left, right| left.0.total_cmp(&right.0))
+            .map(|(_, character)| character)
+    }
+
+    /// Actualiza el halo del pedestal y devuelve `true` si cambió el hover.
+    pub fn update_hover(&mut self, ray: &Ray) -> bool {
+        let next = self.pick(ray);
+        if next == self.hovered {
+            return false;
+        }
+        self.hovered = next;
+        for target in &self.targets {
+            if let Some(pedestal) = self.scene.cubes.get_mut(target.pedestal_index) {
+                pedestal.material_index = if Some(target.character) == self.hovered {
+                    self.highlight_material
+                } else {
+                    self.base_material
+                };
+            }
+        }
+        true
+    }
 }
 
 #[must_use]
@@ -40,14 +84,6 @@ pub fn create_character_selection() -> CharacterSelection {
         create_pardo(Vec3::new(0.0, 0.25, 0.0), 0.78, &palette),
         create_panda(Vec3::new(5.2, 0.25, 0.0), 0.78, &palette),
     ];
-    let targets = models
-        .iter()
-        .map(|model| SelectionTarget {
-            character: model.kind,
-            bounds: model.bounds,
-        })
-        .collect();
-
     let mut world = VoxelBuilder::new(scene);
     world.add_box(
         Vec3::new(0.0, -0.2, 0.0),
@@ -62,6 +98,20 @@ pub fn create_character_selection() -> CharacterSelection {
     for x in [-7.2, -6.4, -1.0, 1.0, 6.4, 7.2] {
         world.add_voxel(Vec3::new(x, 0.3, 2.7), palette.grass);
     }
+    let mut targets = Vec::with_capacity(models.len());
+    for model in &models {
+        let pedestal_index = world.scene.cubes.len();
+        world.add_box(
+            Vec3::new(model.pivot.x, 0.11, model.pivot.z),
+            Vec3::new(3.7, 0.16, 3.3),
+            palette.stone,
+        );
+        targets.push(SelectionTarget {
+            character: model.kind,
+            bounds: model.bounds,
+            pedestal_index,
+        });
+    }
     for model in models {
         for cube in model.cubes {
             world.scene.add_cube(cube);
@@ -71,6 +121,9 @@ pub fn create_character_selection() -> CharacterSelection {
     CharacterSelection {
         scene: world.finish(),
         targets,
+        hovered: None,
+        base_material: palette.stone,
+        highlight_material: palette.lantern,
     }
 }
 
@@ -87,5 +140,26 @@ mod tests {
             .targets
             .iter()
             .any(|target| target.character == CharacterKind::Panda));
+    }
+
+    #[test]
+    fn raycast_selects_and_highlights_pardo() {
+        let mut selection = create_character_selection();
+        let pardo = selection
+            .targets
+            .iter()
+            .find(|target| target.character == CharacterKind::Pardo)
+            .copied()
+            .expect("Pardo target exists");
+        let origin = Vec3::new(0.0, 3.0, -14.0);
+        let ray = Ray::new(origin, pardo.bounds.center() - origin).expect("valid selection ray");
+
+        assert_eq!(selection.pick(&ray), Some(CharacterKind::Pardo));
+        assert!(selection.update_hover(&ray));
+        assert_eq!(selection.hovered(), Some(CharacterKind::Pardo));
+        assert_eq!(
+            selection.scene.cubes[pardo.pedestal_index].material_index,
+            selection.highlight_material
+        );
     }
 }
