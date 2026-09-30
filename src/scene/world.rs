@@ -5,6 +5,8 @@ use crate::{
     math::Ray,
 };
 
+use super::Skybox;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SceneHit {
     pub surface: SurfaceHit,
@@ -20,6 +22,7 @@ pub struct Scene {
     pub lights: Vec<Light>,
     pub ambient_color: Color,
     pub ambient_intensity: f32,
+    pub skybox: Skybox,
 }
 
 impl Scene {
@@ -31,7 +34,14 @@ impl Scene {
             lights: Vec::new(),
             ambient_color,
             ambient_intensity: ambient_intensity.max(0.0),
+            skybox: Skybox::default(),
         }
+    }
+
+    #[must_use]
+    pub fn with_skybox(mut self, skybox: Skybox) -> Self {
+        self.skybox = skybox;
+        self
     }
 
     pub fn add_material(&mut self, material: Material) -> usize {

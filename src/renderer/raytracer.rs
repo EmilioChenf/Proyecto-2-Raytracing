@@ -31,7 +31,7 @@ impl RayTracer {
 
     fn trace_recursive(&self, scene: &Scene, ray: &Ray, depth: u8) -> Color {
         let Some(hit) = scene.intersect(ray, self.shadow_bias, f32::INFINITY) else {
-            return background(ray);
+            return scene.skybox.sample(ray.direction);
         };
 
         let local_color = self.shade(scene, ray, hit);
@@ -143,11 +143,6 @@ impl RayTracer {
 
         color
     }
-}
-
-fn background(ray: &Ray) -> Color {
-    let blend = (ray.direction.y * 0.5 + 0.5).clamp(0.0, 1.0);
-    rgb(185, 211, 238) * blend + rgb(45, 71, 112) * (1.0 - blend)
 }
 
 #[cfg(test)]
