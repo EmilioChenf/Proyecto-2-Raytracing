@@ -29,13 +29,13 @@ fn create_body(model: &mut ModelBuilder<'_>) {
 fn create_head(model: &mut ModelBuilder<'_>) {
     model.add(
         Vec3::new(0.0, 5.1, 0.0),
-        Vec3::new(2.75, 2.25, 1.95),
+        Vec3::new(2.9, 2.35, 2.0),
         model.palette.white,
     );
     for x in [-1.02, 1.02] {
         model.add(
-            Vec3::new(x, 6.15, 0.05),
-            Vec3::new(0.75, 0.75, 0.7),
+            Vec3::new(x, 6.2, -0.02),
+            Vec3::new(0.92, 0.92, 0.78),
             model.palette.black,
         );
     }
@@ -45,7 +45,7 @@ fn create_arms(model: &mut ModelBuilder<'_>) {
     for x in [-1.62, 1.62] {
         model.add(
             Vec3::new(x, 4.25, 0.0),
-            Vec3::new(0.9, 2.8, 1.0),
+            Vec3::new(1.0, 2.95, 1.08),
             model.palette.black,
         );
         model.add(
@@ -74,14 +74,19 @@ fn create_legs(model: &mut ModelBuilder<'_>) {
 fn create_face(model: &mut ModelBuilder<'_>) {
     for x in [-0.55, 0.55] {
         model.add(
-            Vec3::new(x, 5.35, -1.05),
-            Vec3::new(0.7, 0.78, 0.35),
+            Vec3::new(x, 5.35, -1.08),
+            Vec3::new(0.82, 0.9, 0.38),
             model.palette.black,
         );
         model.add(
-            Vec3::new(x, 5.38, -1.27),
-            Vec3::new(0.17, 0.2, 0.16),
+            Vec3::new(x, 5.4, -1.31),
+            Vec3::new(0.22, 0.24, 0.16),
             model.palette.white,
+        );
+        model.add(
+            Vec3::new(x, 5.4, -1.41),
+            Vec3::new(0.1, 0.12, 0.08),
+            model.palette.black,
         );
     }
     model.add(
@@ -97,6 +102,11 @@ fn create_face(model: &mut ModelBuilder<'_>) {
     model.add(
         Vec3::new(0.0, 4.55, -1.35),
         Vec3::new(0.48, 0.16, 0.18),
+        model.palette.black,
+    );
+    model.add(
+        Vec3::new(0.0, 4.36, -1.31),
+        Vec3::new(0.18, 0.2, 0.14),
         model.palette.black,
     );
 }

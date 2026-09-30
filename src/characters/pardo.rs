@@ -38,6 +38,11 @@ fn create_head(model: &mut ModelBuilder<'_>) {
             Vec3::new(0.7, 0.65, 0.68),
             model.palette.brown,
         );
+        model.add(
+            Vec3::new(x, 6.08, -0.38),
+            Vec3::new(0.34, 0.3, 0.12),
+            model.palette.orange,
+        );
     }
 }
 
@@ -81,6 +86,11 @@ fn create_legs(model: &mut ModelBuilder<'_>) {
 
 fn create_face(model: &mut ModelBuilder<'_>) {
     model.add(
+        Vec3::new(0.0, 3.0, -1.02),
+        Vec3::new(1.65, 1.85, 0.18),
+        model.palette.orange,
+    );
+    model.add(
         Vec3::new(0.0, 4.75, -1.18),
         Vec3::new(1.4, 0.95, 0.55),
         model.palette.orange,
@@ -100,6 +110,11 @@ fn create_face(model: &mut ModelBuilder<'_>) {
     model.add(
         Vec3::new(0.0, 4.48, -1.35),
         Vec3::new(0.5, 0.18, 0.2),
+        model.palette.black,
+    );
+    model.add(
+        Vec3::new(0.0, 4.27, -1.33),
+        Vec3::new(0.18, 0.22, 0.14),
         model.palette.black,
     );
 }

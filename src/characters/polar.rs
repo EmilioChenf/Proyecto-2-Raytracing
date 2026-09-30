@@ -79,18 +79,23 @@ fn create_face(model: &mut ModelBuilder<'_>) {
     model.add(
         Vec3::new(0.0, 4.72, -1.08),
         Vec3::new(1.35, 0.85, 0.45),
-        model.palette.white,
+        model.palette.snow,
     );
     for x in [-0.48, 0.48] {
         model.add(
             Vec3::new(x, 5.28, -1.0),
-            Vec3::new(0.18, 0.22, 0.18),
+            Vec3::new(0.23, 0.27, 0.2),
             model.palette.black,
         );
     }
     model.add(
         Vec3::new(0.0, 4.82, -1.35),
         Vec3::new(0.42, 0.3, 0.25),
+        model.palette.black,
+    );
+    model.add(
+        Vec3::new(0.0, 4.48, -1.3),
+        Vec3::new(0.42, 0.12, 0.14),
         model.palette.black,
     );
 }
@@ -104,6 +109,11 @@ fn create_bandana(model: &mut ModelBuilder<'_>) {
     model.add(
         Vec3::new(1.18, 6.05, 0.15),
         Vec3::new(0.35, 1.0, 0.35),
+        model.palette.blue,
+    );
+    model.add(
+        Vec3::new(1.42, 5.78, -0.75),
+        Vec3::new(0.42, 0.85, 0.3),
         model.palette.blue,
     );
 }
