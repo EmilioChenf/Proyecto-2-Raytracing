@@ -1,7 +1,7 @@
 use crate::{
     camera::OrbitCamera,
     material::{pack_rgb, rgb, Color},
-    math::{reflect, Ray},
+    math::{reflect, refract, schlick, Ray},
     scene::{Scene, SceneHit},
 };
 
@@ -38,23 +38,53 @@ impl RayTracer {
         let Some(material) = scene.materials.get(hit.surface.material_index) else {
             return local_color;
         };
-        if depth >= self.max_depth || material.reflectivity <= 0.0 {
+        if depth >= self.max_depth || (material.reflectivity <= 0.0 && material.transparency <= 0.0)
+        {
             return local_color;
         }
 
-        let reflection_direction = reflect(ray.direction, hit.surface.normal).normalize();
-        let bias_normal = if reflection_direction.dot(&hit.surface.normal) >= 0.0 {
+        let entering = ray.direction.dot(&hit.surface.normal) < 0.0;
+        let oriented_normal = if entering {
             hit.surface.normal
         } else {
             -hit.surface.normal
         };
+        let (index_from, index_to) = if entering {
+            (1.0, material.refractive_index)
+        } else {
+            (material.refractive_index, 1.0)
+        };
+        let cosine = (-ray.direction).dot(&oriented_normal).clamp(0.0, 1.0);
+
+        let reflection_direction = reflect(ray.direction, oriented_normal).normalize();
         let reflection_ray = Ray {
-            origin: hit.surface.point + bias_normal * self.shadow_bias,
+            origin: hit.surface.point + oriented_normal * self.shadow_bias,
             direction: reflection_direction,
         };
         let reflected = self.trace_recursive(scene, &reflection_ray, depth + 1);
 
-        local_color * (1.0 - material.reflectivity) + reflected * material.reflectivity
+        let refracted_direction = refract(ray.direction, oriented_normal, index_from, index_to);
+        let fresnel = if refracted_direction.is_some() {
+            schlick(cosine, index_from, index_to)
+        } else {
+            1.0
+        };
+        let available = 1.0 - material.reflectivity;
+        let reflection_weight = material.reflectivity + available * material.transparency * fresnel;
+        let refraction_weight = available * material.transparency * (1.0 - fresnel);
+        let local_weight = available * (1.0 - material.transparency);
+
+        let refracted = refracted_direction.map_or_else(Color::zeros, |direction| {
+            let refraction_ray = Ray {
+                origin: hit.surface.point - oriented_normal * self.shadow_bias,
+                direction,
+            };
+            let transmitted = self.trace_recursive(scene, &refraction_ray, depth + 1);
+            let tint = Color::repeat(0.75) + material.albedo * 0.25;
+            transmitted.component_mul(&tint)
+        });
+
+        local_color * local_weight + reflected * reflection_weight + refracted * refraction_weight
     }
 
     #[must_use]
