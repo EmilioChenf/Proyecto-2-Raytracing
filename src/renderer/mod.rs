@@ -1,0 +1,1 @@
+//! Renderizador de ray tracing.

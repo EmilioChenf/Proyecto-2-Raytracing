@@ -1,0 +1,1 @@
+//! Primitivas geométricas e intersecciones.

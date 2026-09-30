@@ -1,0 +1,16 @@
+[package]
+name = "proyecto-2-raytracing"
+version = "0.1.0"
+edition = "2021"
+description = "Diorama voxel interactivo renderizado con ray tracing"
+
+[dependencies]
+minifb = "0.26.0"
+nalgebra-glm = "0.18.0"
+
+[profile.dev]
+opt-level = 2
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
