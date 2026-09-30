@@ -34,4 +34,17 @@ impl CharacterWorld {
             base_character_cubes,
         }
     }
+
+    pub fn set_character_rotation(&mut self, angle: f32) {
+        for (target, original) in self
+            .scene
+            .cubes
+            .get_mut(self.character_range.clone())
+            .into_iter()
+            .flatten()
+            .zip(&self.base_character_cubes)
+        {
+            *target = original.rotated_about_y(self.character_pivot, angle);
+        }
+    }
 }

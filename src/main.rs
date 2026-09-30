@@ -1,3 +1,3 @@
-fn main() {
-    println!("Proyecto 2: Diorama con Ray Tracing");
+fn main() -> Result<(), minifb::Error> {
+    proyecto_2_raytracing::app::run()
 }
