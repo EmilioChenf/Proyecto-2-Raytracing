@@ -4,12 +4,12 @@ use super::{install_palette, CharacterWorld, Palette, Scene, Skybox, VoxelBuilde
 
 #[must_use]
 pub fn create_pardo_world() -> CharacterWorld {
-    let mut scene = Scene::new(rgb(224, 183, 133), 0.22).with_skybox(Skybox::forest());
+    let mut scene = Scene::new(rgb(224, 183, 133), 0.17).with_skybox(Skybox::forest());
     let palette = install_palette(&mut scene);
     scene.lights.push(Light::Directional {
         direction: Vec3::new(0.8, -1.0, -0.3),
         color: rgb(255, 214, 158),
-        intensity: 1.45,
+        intensity: 1.55,
     });
     scene.lights.push(Light::Point {
         position: Vec3::new(-3.5, 4.5, -2.0),
@@ -20,6 +20,11 @@ pub fn create_pardo_world() -> CharacterWorld {
         position: Vec3::new(5.5, 3.8, 1.5),
         color: rgb(255, 176, 80),
         intensity: 4.0,
+    });
+    scene.lights.push(Light::Point {
+        position: Vec3::new(1.35, 2.8, 2.45),
+        color: rgb(255, 143, 48),
+        intensity: 3.6,
     });
 
     let mut world = VoxelBuilder::new(scene);
@@ -38,6 +43,19 @@ pub fn create_pardo_world() -> CharacterWorld {
         Vec3::new(15.5, 0.45, 11.5),
         palette.stone,
     );
+    for (x, z, width, depth, material) in [
+        (-5.0, -2.0, 2.8, 1.7, palette.dirt),
+        (5.7, -1.0, 2.2, 1.4, palette.dirt),
+        (-2.8, 2.0, 1.5, 1.2, palette.stone),
+        (3.8, 3.0, 1.8, 1.0, palette.stone),
+        (0.5, -5.2, 2.5, 0.9, palette.dirt),
+    ] {
+        world.add_box(
+            Vec3::new(x, 0.035, z),
+            Vec3::new(width, 0.07, depth),
+            material,
+        );
+    }
 
     add_cabin(&mut world, &palette);
 
@@ -59,8 +77,20 @@ pub fn create_pardo_world() -> CharacterWorld {
     ] {
         world.add_rock(Vec3::new(x, 0.0, z), scale, palette.stone);
     }
+    world.add_rock(Vec3::new(-5.7, 0.0, -1.0), 1.7, palette.stone);
+    world.add_rock(Vec3::new(6.0, 0.0, -3.6), 1.45, palette.stone);
     world.add_lantern(Vec3::new(-3.8, 0.0, -3.6), &palette);
     world.add_lantern(Vec3::new(4.8, 0.0, -2.4), &palette);
+    world.add_box(
+        Vec3::new(1.35, 2.75, 2.48),
+        Vec3::new(0.48, 0.65, 0.34),
+        palette.lantern,
+    );
+    world.add_box(
+        Vec3::new(1.35, 3.18, 2.58),
+        Vec3::new(1.25, 0.16, 0.16),
+        palette.metal,
+    );
 
     // Cerca y camino hacia la cabaña.
     for x in -4..=4 {
