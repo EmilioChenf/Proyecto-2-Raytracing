@@ -93,7 +93,7 @@ fn every_world_has_geometry_materials_lights_and_bvh() {
 #[test]
 fn selection_raycast_and_small_render_are_functional() {
     let selection = create_character_selection();
-    let camera = OrbitCamera::new(Vec3::new(0.0, 2.5, 0.0), 17.5, 0.0, 0.08);
+    let camera = OrbitCamera::new(Vec3::new(0.0, 2.5, 0.0), 15.5, std::f32::consts::PI, 0.08);
     let center_ray = camera.ray_from_screen(80.0, 45.0, 160, 90);
     assert_eq!(selection.pick(&center_ray), Some(CharacterKind::Pardo));
 
