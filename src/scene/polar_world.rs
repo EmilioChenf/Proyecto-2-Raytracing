@@ -4,17 +4,22 @@ use super::{install_palette, CharacterWorld, Scene, Skybox, VoxelBuilder};
 
 #[must_use]
 pub fn create_polar_world() -> CharacterWorld {
-    let mut scene = Scene::new(rgb(184, 221, 235), 0.24).with_skybox(Skybox::polar());
+    let mut scene = Scene::new(rgb(170, 215, 235), 0.17).with_skybox(Skybox::polar());
     let palette = install_palette(&mut scene);
     scene.lights.push(Light::Directional {
         direction: Vec3::new(0.55, -1.0, -0.35),
         color: rgb(214, 242, 255),
-        intensity: 1.4,
+        intensity: 1.6,
     });
     scene.lights.push(Light::Point {
         position: Vec3::new(-5.0, 7.5, -4.0),
         color: rgb(153, 217, 255),
-        intensity: 4.5,
+        intensity: 5.2,
+    });
+    scene.lights.push(Light::Point {
+        position: Vec3::new(-1.5, 5.5, -6.0),
+        color: rgb(218, 241, 255),
+        intensity: 3.2,
     });
 
     let mut world = VoxelBuilder::new(scene);
@@ -57,6 +62,11 @@ pub fn create_polar_world() -> CharacterWorld {
         Vec3::new(0.0, 2.0, 5.25),
         Vec3::new(7.0, 4.0, 1.0),
         palette.ice,
+    );
+    world.add_box(
+        Vec3::new(0.0, 2.0, 5.82),
+        Vec3::new(5.4, 3.2, 0.18),
+        palette.stone,
     );
     world.add_box(
         Vec3::new(-3.0, 1.4, 3.7),
@@ -105,6 +115,26 @@ pub fn create_polar_world() -> CharacterWorld {
             palette.ice,
         );
     }
+
+    // Ventanas de hielo delante de núcleos oscuros: hacen visible el cambio
+    // de dirección producido por IOR 1.31 en lugar de perderse en la nieve.
+    for x in [-4.6, 4.6] {
+        world.add_box(
+            Vec3::new(x, 0.95, -1.8),
+            Vec3::new(0.58, 1.55, 0.58),
+            palette.stone,
+        );
+        world.add_box(
+            Vec3::new(x, 1.15, -2.65),
+            Vec3::new(1.35, 2.3, 0.92),
+            palette.ice,
+        );
+    }
+    world.add_box(
+        Vec3::new(-0.8, 0.08, -1.2),
+        Vec3::new(4.0, 0.16, 3.1),
+        palette.blue,
+    );
 
     let model = create_polar(Vec3::new(-0.8, 0.2, -1.2), 0.92, &palette);
     CharacterWorld::attach(world.finish(), model)

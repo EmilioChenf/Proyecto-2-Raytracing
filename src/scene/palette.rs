@@ -98,14 +98,14 @@ pub fn install_palette(scene: &mut Scene) -> Palette {
     let ice = scene.add_material(
         Material::new(
             "Ice",
-            rgb(165, 224, 239),
+            rgb(125, 210, 238),
             Texture::Checker {
-                secondary: rgb(205, 245, 249),
+                secondary: rgb(214, 249, 255),
                 scale: 3.0,
             },
         )
-        .with_surface(0.95, 150.0, 0.28)
-        .with_transmission(0.78, 1.31),
+        .with_surface(0.98, 180.0, 0.24)
+        .with_transmission(0.84, 1.31),
     );
     let snow = scene.add_material(
         Material::new(
