@@ -10,6 +10,7 @@ use crate::{
 pub struct RayTracer {
     pub shadow_bias: f32,
     pub exposure: f32,
+    pub max_depth: u8,
 }
 
 impl Default for RayTracer {
@@ -17,6 +18,7 @@ impl Default for RayTracer {
         Self {
             shadow_bias: 1.0e-3,
             exposure: 1.15,
+            max_depth: 3,
         }
     }
 }
@@ -24,10 +26,35 @@ impl Default for RayTracer {
 impl RayTracer {
     #[must_use]
     pub fn trace(&self, scene: &Scene, ray: &Ray) -> Color {
+        self.trace_recursive(scene, ray, 0)
+    }
+
+    fn trace_recursive(&self, scene: &Scene, ray: &Ray, depth: u8) -> Color {
         let Some(hit) = scene.intersect(ray, self.shadow_bias, f32::INFINITY) else {
             return background(ray);
         };
-        self.shade(scene, ray, hit)
+
+        let local_color = self.shade(scene, ray, hit);
+        let Some(material) = scene.materials.get(hit.surface.material_index) else {
+            return local_color;
+        };
+        if depth >= self.max_depth || material.reflectivity <= 0.0 {
+            return local_color;
+        }
+
+        let reflection_direction = reflect(ray.direction, hit.surface.normal).normalize();
+        let bias_normal = if reflection_direction.dot(&hit.surface.normal) >= 0.0 {
+            hit.surface.normal
+        } else {
+            -hit.surface.normal
+        };
+        let reflection_ray = Ray {
+            origin: hit.surface.point + bias_normal * self.shadow_bias,
+            direction: reflection_direction,
+        };
+        let reflected = self.trace_recursive(scene, &reflection_ray, depth + 1);
+
+        local_color * (1.0 - material.reflectivity) + reflected * material.reflectivity
     }
 
     #[must_use]
@@ -131,5 +158,29 @@ mod tests {
         let shadowed = tracer.trace(&lit_scene(true), &ray);
 
         assert!(lit.norm() > shadowed.norm());
+    }
+
+    #[test]
+    fn mirror_ray_reaches_emissive_cube() {
+        let mut scene = Scene::new(rgb(0, 0, 0), 0.0);
+        let mirror = scene.add_material(
+            Material::new("mirror", rgb(0, 0, 0), Texture::Solid).with_surface(1.0, 128.0, 1.0),
+        );
+        let glow = scene.add_material(
+            Material::new("glow", rgb(0, 0, 0), Texture::Solid)
+                .with_emission(rgb(255, 20, 10) * 3.0),
+        );
+        scene.add_cube(Cube::new(Vec3::zeros(), Vec3::new(8.0, 0.1, 8.0), mirror));
+        scene.add_cube(Cube::new(
+            Vec3::new(0.0, 1.45, 2.35),
+            Vec3::repeat(0.8),
+            glow,
+        ));
+
+        let ray =
+            Ray::new(Vec3::new(0.0, 1.0, 0.0), Vec3::new(0.0, -1.0, 1.0)).expect("valid test ray");
+        let color = RayTracer::default().trace(&scene, &ray);
+
+        assert!(color.x > color.z * 2.0);
     }
 }
