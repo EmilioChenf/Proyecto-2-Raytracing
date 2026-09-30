@@ -57,6 +57,39 @@ impl Aabb {
         }
     }
 
+    /// Distancia de entrada al intervalo de la caja. A diferencia de
+    /// `intersect`, si el rayo ya está dentro devuelve `min_distance`; esto
+    /// es lo correcto para recorrer volúmenes contenedores de un BVH.
+    #[must_use]
+    pub fn entry_distance(&self, ray: &Ray, min_distance: f32, max_distance: f32) -> Option<f32> {
+        let mut entry = min_distance;
+        let mut exit = max_distance;
+
+        for axis in 0..3 {
+            let origin = ray.origin[axis];
+            let direction = ray.direction[axis];
+            if direction.abs() < PARALLEL_EPSILON {
+                if origin < self.min[axis] || origin > self.max[axis] {
+                    return None;
+                }
+                continue;
+            }
+
+            let mut near = (self.min[axis] - origin) / direction;
+            let mut far = (self.max[axis] - origin) / direction;
+            if near > far {
+                std::mem::swap(&mut near, &mut far);
+            }
+            entry = entry.max(near);
+            exit = exit.min(far);
+            if entry > exit {
+                return None;
+            }
+        }
+
+        Some(entry)
+    }
+
     /// Algoritmo de slabs. Devuelve la entrada o, si el origen está dentro,
     /// la salida de la caja.
     #[must_use]
@@ -153,5 +186,11 @@ mod tests {
         let ray =
             Ray::new(Vec3::new(2.0, 0.0, 4.0), Vec3::new(0.0, 0.0, -1.0)).expect("valid test ray");
         assert!(unit_box().intersect(&ray, 0.001, f32::INFINITY).is_none());
+    }
+
+    #[test]
+    fn bvh_entry_for_inside_ray_is_minimum_distance() {
+        let ray = Ray::new(Vec3::zeros(), Vec3::new(1.0, 0.0, 0.0)).expect("valid test ray");
+        assert_eq!(unit_box().entry_distance(&ray, 0.001, 0.5), Some(0.001));
     }
 }

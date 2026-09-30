@@ -1,6 +1,7 @@
 //! Escenas y utilidades de construcción voxel.
 
 mod builder;
+mod bvh;
 mod character_selection;
 mod character_world;
 mod main_world;

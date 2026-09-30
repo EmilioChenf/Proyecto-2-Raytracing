@@ -25,6 +25,7 @@ impl CharacterWorld {
         let base_character_cubes = model.cubes;
         scene.cubes.extend(base_character_cubes.iter().copied());
         let end = scene.cubes.len();
+        scene.rebuild_acceleration();
 
         Self {
             scene,
@@ -46,5 +47,6 @@ impl CharacterWorld {
         {
             *target = original.rotated_about_y(self.character_pivot, angle);
         }
+        self.scene.rebuild_acceleration();
     }
 }

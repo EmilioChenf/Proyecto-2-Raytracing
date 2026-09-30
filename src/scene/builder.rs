@@ -114,7 +114,8 @@ impl VoxelBuilder {
     }
 
     #[must_use]
-    pub fn finish(self) -> Scene {
+    pub fn finish(mut self) -> Scene {
+        self.scene.rebuild_acceleration();
         self.scene
     }
 }
