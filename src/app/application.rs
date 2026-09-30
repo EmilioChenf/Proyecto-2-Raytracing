@@ -232,7 +232,7 @@ impl Application {
 fn camera_for(state: GameState) -> OrbitCamera {
     match state {
         GameState::MainWorld => {
-            OrbitCamera::new(Vec3::new(0.0, -0.7, 0.0), 24.0, 3.65, 0.28).with_limits(7.0, 45.0)
+            OrbitCamera::new(Vec3::new(0.0, -0.5, 0.0), 21.5, 2.55, 0.3).with_limits(7.0, 45.0)
         }
         GameState::CharacterSelection => {
             OrbitCamera::new(Vec3::new(0.0, 2.5, 0.0), 15.5, std::f32::consts::PI, 0.08)

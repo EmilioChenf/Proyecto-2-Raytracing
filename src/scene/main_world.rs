@@ -5,12 +5,12 @@ use super::{install_palette, Scene, Skybox, VoxelBuilder};
 /// Diorama inicial: isla flotante, cabaña, laguna y cascada.
 #[must_use]
 pub fn create_main_world() -> Scene {
-    let mut scene = Scene::new(rgb(190, 205, 230), 0.2).with_skybox(Skybox::main_world());
+    let mut scene = Scene::new(rgb(180, 198, 225), 0.16).with_skybox(Skybox::main_world());
     let palette = install_palette(&mut scene);
     scene.lights.push(Light::Directional {
         direction: Vec3::new(0.7, -1.0, -0.45),
         color: rgb(255, 236, 210),
-        intensity: 1.3,
+        intensity: 1.5,
     });
     scene.lights.push(Light::Point {
         position: Vec3::new(-6.0, 8.0, 6.0),
@@ -70,6 +70,23 @@ pub fn create_main_world() -> Scene {
         Vec3::new(1.4, 0.3, 4.1),
         palette.water,
     );
+    world.add_box(
+        Vec3::new(8.18, 0.34, 1.3),
+        Vec3::new(1.45, 0.12, 3.45),
+        palette.snow,
+    );
+    world.add_box(
+        Vec3::new(8.55, -6.0, 1.3),
+        Vec3::new(1.9, 0.15, 4.5),
+        palette.snow,
+    );
+    for (x, y, z, size) in [
+        (9.0, -5.65, -0.25, 0.35),
+        (8.85, -5.85, 2.75, 0.28),
+        (7.9, -5.7, 3.0, 0.24),
+    ] {
+        world.add_box(Vec3::new(x, y, z), Vec3::repeat(size), palette.water);
+    }
 
     for (x, z, height) in [
         (-7.1, -4.7, 4.4),
@@ -112,6 +129,21 @@ pub fn create_main_world() -> Scene {
             Vec3::new(x + 0.38, 0.2, z + 0.22),
             Vec3::new(0.38, 0.4, 0.38),
             palette.grass,
+        );
+    }
+    for (x, z) in [(-5.5, -2.0), (-4.4, 3.7), (1.4, -4.8), (5.8, 4.0)] {
+        world.add_box(
+            Vec3::new(x, 0.3, z),
+            Vec3::new(0.16, 0.6, 0.16),
+            palette.leaves,
+        );
+        world.add_box(Vec3::new(x, 0.67, z), Vec3::repeat(0.28), palette.snow);
+    }
+    for y in [1.2, 2.1, 3.0] {
+        world.add_box(
+            Vec3::new(-6.0, y, -2.5),
+            Vec3::new(0.45, 0.55, 0.22),
+            palette.leaves,
         );
     }
 

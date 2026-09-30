@@ -12,18 +12,20 @@ pub struct Skybox {
     pub sun_direction: Vec3,
     pub sun_color: Color,
     pub sun_strength: f32,
+    pub cloud_strength: f32,
 }
 
 impl Skybox {
     #[must_use]
     pub fn main_world() -> Self {
         Self {
-            zenith: rgb(75, 126, 190),
-            horizon: rgb(221, 190, 208),
-            ground: rgb(38, 34, 58),
+            zenith: rgb(38, 91, 176),
+            horizon: rgb(255, 174, 137),
+            ground: rgb(25, 27, 52),
             sun_direction: Vec3::new(-0.7, 0.65, 0.3).normalize(),
             sun_color: rgb(255, 226, 174),
             sun_strength: 2.2,
+            cloud_strength: 0.42,
         }
     }
 
@@ -36,6 +38,7 @@ impl Skybox {
             sun_direction: Vec3::new(-0.5, 0.8, 0.2).normalize(),
             sun_color: rgb(218, 245, 255),
             sun_strength: 1.8,
+            cloud_strength: 0.5,
         }
     }
 
@@ -48,6 +51,7 @@ impl Skybox {
             sun_direction: Vec3::new(-0.8, 0.55, 0.25).normalize(),
             sun_color: rgb(255, 190, 105),
             sun_strength: 2.6,
+            cloud_strength: 0.24,
         }
     }
 
@@ -60,6 +64,7 @@ impl Skybox {
             sun_direction: Vec3::new(-0.4, 0.75, -0.3).normalize(),
             sun_color: rgb(242, 235, 171),
             sun_strength: 2.0,
+            cloud_strength: 0.3,
         }
     }
 
@@ -74,6 +79,15 @@ impl Skybox {
             let blend = (-height).sqrt();
             self.horizon * (1.0 - blend) + self.ground * blend
         };
+        let cloud_noise = ((normalized.x * 8.0 + normalized.z * 3.0).sin()
+            + (normalized.x * 17.0 - normalized.z * 11.0).sin() * 0.5)
+            * 0.5
+            + 0.5;
+        let cloud = ((cloud_noise - 0.48) * 3.2).clamp(0.0, 1.0)
+            * (1.0 - height.abs()).powi(2)
+            * self.cloud_strength;
+        let cloud_color = rgb(255, 244, 232);
+        let base = base * (1.0 - cloud) + cloud_color * cloud;
         let sun = normalized.dot(&self.sun_direction).max(0.0).powf(384.0) * self.sun_strength;
         base + self.sun_color * sun
     }

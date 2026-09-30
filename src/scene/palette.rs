@@ -28,9 +28,9 @@ pub struct Palette {
 pub fn install_palette(scene: &mut Scene) -> Palette {
     let grass = scene.add_material(Material::new(
         "Grass",
-        rgb(74, 126, 45),
+        rgb(60, 132, 42),
         Texture::Checker {
-            secondary: rgb(91, 145, 53),
+            secondary: rgb(105, 164, 48),
             scale: 5.0,
         },
     ));
@@ -46,9 +46,9 @@ pub fn install_palette(scene: &mut Scene) -> Palette {
     let stone = scene.add_material(
         Material::new(
             "Stone",
-            rgb(116, 118, 116),
+            rgb(96, 104, 111),
             Texture::Speckled {
-                secondary: rgb(81, 88, 91),
+                secondary: rgb(63, 72, 79),
                 scale: 4.0,
                 amount: 0.24,
             },
@@ -58,9 +58,9 @@ pub fn install_palette(scene: &mut Scene) -> Palette {
     let wood = scene.add_material(
         Material::new(
             "Wood",
-            rgb(139, 79, 38),
+            rgb(157, 78, 31),
             Texture::Grain {
-                secondary: rgb(79, 42, 25),
+                secondary: rgb(79, 35, 20),
                 scale: 7.0,
             },
         )
@@ -86,9 +86,9 @@ pub fn install_palette(scene: &mut Scene) -> Palette {
     let water = scene.add_material(
         Material::new(
             "Water",
-            rgb(46, 139, 173),
+            rgb(24, 126, 181),
             Texture::Ripples {
-                secondary: rgb(126, 215, 229),
+                secondary: rgb(83, 205, 236),
                 scale: 5.0,
             },
         )
