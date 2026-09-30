@@ -91,6 +91,28 @@ impl VoxelBuilder {
         );
     }
 
+    pub fn add_bamboo(&mut self, position: Vec3, height: f32, palette: &Palette) {
+        let segments = (height / 1.1).round().max(2.0) as usize;
+        let segment_height = height / segments as f32;
+        for segment in 0..segments {
+            self.add_box(
+                position + Vec3::new(0.0, segment_height * (segment as f32 + 0.5), 0.0),
+                Vec3::new(0.36, segment_height * 0.88, 0.36),
+                palette.bamboo,
+            );
+        }
+        self.add_box(
+            position + Vec3::new(0.5, height * 0.72, 0.0),
+            Vec3::new(1.25, 0.22, 0.55),
+            palette.leaves,
+        );
+        self.add_box(
+            position + Vec3::new(-0.35, height * 0.9, 0.15),
+            Vec3::new(1.0, 0.2, 0.5),
+            palette.leaves,
+        );
+    }
+
     #[must_use]
     pub fn finish(self) -> Scene {
         self.scene
