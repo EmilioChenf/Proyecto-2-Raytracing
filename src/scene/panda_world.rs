@@ -4,12 +4,12 @@ use super::{install_palette, CharacterWorld, Scene, Skybox, VoxelBuilder};
 
 #[must_use]
 pub fn create_panda_world() -> CharacterWorld {
-    let mut scene = Scene::new(rgb(198, 225, 180), 0.24).with_skybox(Skybox::bamboo());
+    let mut scene = Scene::new(rgb(190, 222, 174), 0.18).with_skybox(Skybox::bamboo());
     let palette = install_palette(&mut scene);
     scene.lights.push(Light::Directional {
         direction: Vec3::new(0.4, -1.0, 0.25),
         color: rgb(236, 244, 197),
-        intensity: 1.4,
+        intensity: 1.5,
     });
     scene.lights.push(Light::Point {
         position: Vec3::new(-5.0, 4.0, -3.0),
@@ -53,6 +53,13 @@ pub fn create_panda_world() -> CharacterWorld {
             Vec3::new(0.18, 1.2, 5.0),
             palette.dark_wood,
         );
+        for z in [-2.25, 2.25] {
+            world.add_box(
+                Vec3::new(x, 0.95, z),
+                Vec3::new(0.34, 1.9, 0.34),
+                palette.dark_wood,
+            );
+        }
     }
 
     for (x, z, height) in [
@@ -67,12 +74,17 @@ pub fn create_panda_world() -> CharacterWorld {
     ] {
         world.add_bamboo(Vec3::new(x, 0.0, z), height, &palette);
     }
+    for (x, z, height) in [(-5.5, 1.0, 3.7), (5.7, -1.1, 3.5)] {
+        world.add_bamboo(Vec3::new(x, 0.0, z), height, &palette);
+    }
     for (x, z, height) in [(-7.4, 0.2, 4.6), (7.2, 0.7, 4.8)] {
         world.add_tree(Vec3::new(x, 0.0, z), height, &palette);
     }
     for (x, z, scale) in [(-5.2, -3.7, 0.9), (-5.8, 2.0, 1.2), (6.3, -2.5, 0.75)] {
         world.add_rock(Vec3::new(x, 0.0, z), scale, palette.stone);
     }
+    world.add_rock(Vec3::new(1.35, 0.0, -2.6), 0.75, palette.stone);
+    world.add_rock(Vec3::new(6.25, 0.0, 2.8), 0.68, palette.stone);
     world.add_lantern(Vec3::new(-4.8, 0.0, -1.8), &palette);
     world.add_lantern(Vec3::new(6.8, 0.0, 2.5), &palette);
 
@@ -84,6 +96,18 @@ pub fn create_panda_world() -> CharacterWorld {
             Vec3::new(x, 0.08, z),
             Vec3::new(0.62, 0.16, 0.72),
             palette.stone,
+        );
+    }
+    world.add_box(
+        Vec3::new(-1.2, 0.07, -0.4),
+        Vec3::new(3.8, 0.14, 2.9),
+        palette.stone,
+    );
+    for (x, z) in [(-6.2, -2.4), (-3.9, 3.8), (0.7, 3.9), (7.2, -2.5)] {
+        world.add_box(
+            Vec3::new(x, 0.3, z),
+            Vec3::new(0.5, 0.6, 0.5),
+            palette.leaves,
         );
     }
 

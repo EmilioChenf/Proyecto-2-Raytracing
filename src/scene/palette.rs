@@ -149,9 +149,9 @@ pub fn install_palette(scene: &mut Scene) -> Palette {
     let orange = scene.add_material(Material::new("Warm fur", rgb(203, 91, 33), Texture::Solid));
     let bamboo = scene.add_material(Material::new(
         "Bamboo",
-        rgb(122, 157, 42),
+        rgb(105, 168, 42),
         Texture::Grain {
-            secondary: rgb(73, 112, 31),
+            secondary: rgb(57, 112, 28),
             scale: 5.0,
         },
     ));
