@@ -66,17 +66,17 @@ impl CharacterSelection {
 
 #[must_use]
 pub fn create_character_selection() -> CharacterSelection {
-    let mut scene = Scene::new(rgb(232, 221, 207), 0.28).with_skybox(Skybox::main_world());
+    let mut scene = Scene::new(rgb(232, 221, 207), 0.2).with_skybox(Skybox::main_world());
     let palette = install_palette(&mut scene);
     scene.lights.push(Light::Directional {
         direction: Vec3::new(0.5, -1.0, -0.6),
         color: rgb(255, 238, 218),
-        intensity: 1.45,
+        intensity: 1.6,
     });
     scene.lights.push(Light::Point {
         position: Vec3::new(0.0, 9.0, -6.0),
         color: rgb(255, 210, 168),
-        intensity: 5.0,
+        intensity: 5.4,
     });
 
     let models = [

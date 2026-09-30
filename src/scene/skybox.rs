@@ -32,9 +32,9 @@ impl Skybox {
     #[must_use]
     pub fn polar() -> Self {
         Self {
-            zenith: rgb(60, 127, 185),
-            horizon: rgb(196, 231, 242),
-            ground: rgb(61, 95, 121),
+            zenith: rgb(43, 105, 176),
+            horizon: rgb(169, 220, 242),
+            ground: rgb(31, 57, 88),
             sun_direction: Vec3::new(-0.5, 0.8, 0.2).normalize(),
             sun_color: rgb(218, 245, 255),
             sun_strength: 1.8,
@@ -45,9 +45,9 @@ impl Skybox {
     #[must_use]
     pub fn forest() -> Self {
         Self {
-            zenith: rgb(66, 135, 205),
-            horizon: rgb(255, 202, 137),
-            ground: rgb(41, 62, 39),
+            zenith: rgb(45, 108, 188),
+            horizon: rgb(255, 177, 101),
+            ground: rgb(27, 48, 27),
             sun_direction: Vec3::new(-0.8, 0.55, 0.25).normalize(),
             sun_color: rgb(255, 190, 105),
             sun_strength: 2.6,
@@ -58,9 +58,9 @@ impl Skybox {
     #[must_use]
     pub fn bamboo() -> Self {
         Self {
-            zenith: rgb(109, 171, 199),
-            horizon: rgb(220, 235, 185),
-            ground: rgb(37, 68, 42),
+            zenith: rgb(67, 145, 193),
+            horizon: rgb(205, 230, 153),
+            ground: rgb(24, 56, 31),
             sun_direction: Vec3::new(-0.4, 0.75, -0.3).normalize(),
             sun_color: rgb(242, 235, 171),
             sun_strength: 2.0,

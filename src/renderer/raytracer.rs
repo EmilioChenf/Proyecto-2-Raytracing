@@ -17,7 +17,7 @@ impl Default for RayTracer {
     fn default() -> Self {
         Self {
             shadow_bias: 1.0e-3,
-            exposure: 1.15,
+            exposure: 1.05,
             max_depth: 3,
         }
     }
