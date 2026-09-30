@@ -96,13 +96,47 @@ impl RayTracer {
         height: usize,
     ) -> Vec<u32> {
         let mut pixels = vec![0; width.saturating_mul(height)];
-        for y in 0..height {
-            for x in 0..width {
+        if width == 0 || height == 0 {
+            return pixels;
+        }
+
+        let worker_count = std::thread::available_parallelism()
+            .map_or(1, std::num::NonZeroUsize::get)
+            .min(height);
+        if worker_count == 1 || pixels.len() < 16_384 {
+            self.render_rows(&mut pixels, scene, camera, width, height, 0);
+            return pixels;
+        }
+
+        let rows_per_worker = height.div_ceil(worker_count);
+        let pixels_per_worker = rows_per_worker * width;
+        std::thread::scope(|scope| {
+            for (worker, pixel_chunk) in pixels.chunks_mut(pixels_per_worker).enumerate() {
+                let first_row = worker * rows_per_worker;
+                scope.spawn(move || {
+                    self.render_rows(pixel_chunk, scene, camera, width, height, first_row);
+                });
+            }
+        });
+        pixels
+    }
+
+    fn render_rows(
+        &self,
+        pixels: &mut [u32],
+        scene: &Scene,
+        camera: &OrbitCamera,
+        width: usize,
+        height: usize,
+        first_row: usize,
+    ) {
+        for (local_y, row) in pixels.chunks_mut(width).enumerate() {
+            let y = first_row + local_y;
+            for (x, pixel) in row.iter_mut().enumerate() {
                 let ray = camera.ray_for_pixel(x, y, width, height);
-                pixels[y * width + x] = pack_rgb(self.trace(scene, &ray), self.exposure);
+                *pixel = pack_rgb(self.trace(scene, &ray), self.exposure);
             }
         }
-        pixels
     }
 
     fn shade(&self, scene: &Scene, ray: &Ray, hit: SceneHit) -> Color {
@@ -207,5 +241,16 @@ mod tests {
         let color = RayTracer::default().trace(&scene, &ray);
 
         assert!(color.x > color.z * 2.0);
+    }
+
+    #[test]
+    fn parallel_render_matches_serial_rows() {
+        let tracer = RayTracer::default();
+        let scene = lit_scene(false);
+        let camera = OrbitCamera::new(Vec3::zeros(), 8.0, 0.4, 0.2);
+        let mut serial = vec![0; 128 * 128];
+        tracer.render_rows(&mut serial, &scene, &camera, 128, 128, 0);
+
+        assert_eq!(tracer.render(&scene, &camera, 128, 128), serial);
     }
 }
