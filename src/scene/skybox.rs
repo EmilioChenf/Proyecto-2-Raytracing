@@ -19,13 +19,13 @@ impl Skybox {
     #[must_use]
     pub fn main_world() -> Self {
         Self {
-            zenith: rgb(38, 91, 176),
-            horizon: rgb(255, 174, 137),
-            ground: rgb(25, 27, 52),
+            zenith: rgb(32, 92, 190),
+            horizon: rgb(160, 190, 225),
+            ground: rgb(20, 35, 85),
             sun_direction: Vec3::new(-0.7, 0.65, 0.3).normalize(),
             sun_color: rgb(255, 226, 174),
             sun_strength: 2.2,
-            cloud_strength: 0.42,
+            cloud_strength: 0.55,
         }
     }
 
@@ -73,24 +73,49 @@ impl Skybox {
         let normalized = direction.normalize();
         let height = normalized.y.clamp(-1.0, 1.0);
         let base = if height >= 0.0 {
-            let blend = height.sqrt();
+            let blend = (height * 2.0).min(1.0).sqrt();
             self.horizon * (1.0 - blend) + self.zenith * blend
         } else {
             let blend = (-height).sqrt();
             self.horizon * (1.0 - blend) + self.ground * blend
         };
-        let cloud_noise = ((normalized.x * 8.0 + normalized.z * 3.0).sin()
-            + (normalized.x * 17.0 - normalized.z * 11.0).sin() * 0.5)
-            * 0.5
-            + 0.5;
-        let cloud = ((cloud_noise - 0.48) * 3.2).clamp(0.0, 1.0)
-            * (1.0 - height.abs()).powi(2)
-            * self.cloud_strength;
+        let cloud = if height > 0.0 && self.cloud_strength > 0.0 {
+            ((cloud_noise(normalized) - 0.48) * 3.2).clamp(0.0, 1.0)
+                * (1.0 - height).powi(2)
+                * self.cloud_strength
+        } else {
+            0.0
+        };
         let cloud_color = rgb(255, 244, 232);
         let base = base * (1.0 - cloud) + cloud_color * cloud;
         let sun = normalized.dot(&self.sun_direction).max(0.0).powf(384.0) * self.sun_strength;
         base + self.sun_color * sun
     }
+}
+
+fn cloud_noise(direction: Vec3) -> f32 {
+    let x = direction.x * 5.0 + direction.y * 4.5;
+    let z = direction.z * 5.0 - direction.y * 3.5;
+    let floor_x = x.floor();
+    let floor_z = z.floor();
+    let cell_x = floor_x as i32;
+    let cell_z = floor_z as i32;
+    let fraction_x = x - floor_x;
+    let fraction_z = z - floor_z;
+    let blend_x = fraction_x.powi(2) * (3.0 - 2.0 * fraction_x);
+    let blend_z = fraction_z.powi(2) * (3.0 - 2.0 * fraction_z);
+
+    let bottom = hash(cell_x, cell_z) * (1.0 - blend_x) + hash(cell_x + 1, cell_z) * blend_x;
+    let top = hash(cell_x, cell_z + 1) * (1.0 - blend_x) + hash(cell_x + 1, cell_z + 1) * blend_x;
+    bottom * (1.0 - blend_z) + top * blend_z
+}
+
+fn hash(x: i32, z: i32) -> f32 {
+    let mut value = (x as u32)
+        .wrapping_mul(374_761_393)
+        .wrapping_add((z as u32).wrapping_mul(668_265_263));
+    value = (value ^ (value >> 13)).wrapping_mul(1_274_126_177);
+    ((value ^ (value >> 16)) & 0xffff) as f32 / 65_535.0
 }
 
 impl Default for Skybox {
