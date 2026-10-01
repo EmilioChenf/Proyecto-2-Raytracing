@@ -50,3 +50,24 @@ impl CharacterWorld {
         self.scene.rebuild_acceleration();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::scene::create_panda_world;
+
+    #[test]
+    fn rotation_changes_only_character_geometry() {
+        let mut world = create_panda_world();
+        let environment = world.scene.cubes[..world.character_range.start].to_vec();
+        let character = world.scene.cubes[world.character_range.clone()].to_vec();
+
+        world.set_character_rotation(std::f32::consts::FRAC_PI_2);
+
+        assert_eq!(
+            world.scene.cubes[..world.character_range.start],
+            environment
+        );
+        assert_ne!(world.scene.cubes[world.character_range.clone()], character);
+        assert!(world.scene.acceleration_node_count() > 1);
+    }
+}

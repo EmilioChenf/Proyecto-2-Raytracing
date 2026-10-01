@@ -191,3 +191,47 @@ pub fn install_palette(scene: &mut Scene) -> Palette {
         glass,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::material::rgb;
+
+    #[test]
+    fn rubric_materials_have_distinct_textures_and_optical_parameters() {
+        let mut scene = Scene::new(rgb(0, 0, 0), 0.0);
+        let palette = install_palette(&mut scene);
+        let indices = [
+            palette.grass,
+            palette.stone,
+            palette.wood,
+            palette.metal,
+            palette.ice,
+        ];
+
+        for (position, &left_index) in indices.iter().enumerate() {
+            let left = scene.materials[left_index];
+            for &right_index in &indices[position + 1..] {
+                let right = scene.materials[right_index];
+                assert_ne!(left.texture, right.texture);
+                assert_ne!(left.albedo, right.albedo);
+                assert_ne!(
+                    (
+                        left.specular,
+                        left.shininess,
+                        left.transparency,
+                        left.reflectivity,
+                        left.refractive_index,
+                    ),
+                    (
+                        right.specular,
+                        right.shininess,
+                        right.transparency,
+                        right.reflectivity,
+                        right.refractive_index,
+                    )
+                );
+            }
+        }
+    }
+}

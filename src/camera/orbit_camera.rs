@@ -120,6 +120,12 @@ mod tests {
 
         assert_eq!(camera.distance, 4.0);
         assert!(camera.pitch < FRAC_PI_2);
+
+        camera.zoom(-100.0);
+        camera.orbit(0.0, -20.0);
+
+        assert_eq!(camera.distance, 20.0);
+        assert!(camera.pitch > -FRAC_PI_2);
     }
 
     #[test]

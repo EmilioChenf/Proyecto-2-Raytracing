@@ -187,6 +187,7 @@ mod tests {
         lighting::Light,
         material::{Material, Texture},
         math::Vec3,
+        scene::Skybox,
     };
 
     fn lit_scene(with_blocker: bool) -> Scene {
@@ -241,6 +242,48 @@ mod tests {
         let color = RayTracer::default().trace(&scene, &ray);
 
         assert!(color.x > color.z * 2.0);
+    }
+
+    #[test]
+    fn transparent_cube_traces_emissive_object_behind_it() {
+        let black = rgb(0, 0, 0);
+        let mut scene = Scene::new(black, 0.0).with_skybox(Skybox {
+            zenith: black,
+            horizon: black,
+            ground: black,
+            sun_direction: Vec3::new(0.0, 1.0, 0.0),
+            sun_color: black,
+            sun_strength: 0.0,
+            cloud_strength: 0.0,
+        });
+        let glass = scene.add_material(
+            Material::new("glass", rgb(255, 255, 255), Texture::Solid).with_transmission(1.0, 1.5),
+        );
+        let glow = scene.add_material(
+            Material::new("glow", black, Texture::Solid).with_emission(rgb(255, 20, 10) * 2.0),
+        );
+        scene.add_cube(Cube::new(Vec3::zeros(), Vec3::repeat(1.0), glass));
+        scene.add_cube(Cube::new(
+            Vec3::new(0.0, 0.0, -3.0),
+            Vec3::repeat(1.0),
+            glow,
+        ));
+
+        let ray =
+            Ray::new(Vec3::new(0.0, 0.0, 3.0), Vec3::new(0.0, 0.0, -1.0)).expect("valid test ray");
+        let color = RayTracer::default().trace(&scene, &ray);
+
+        assert!(color.x > 1.0);
+        assert!(color.x > color.z * 5.0);
+    }
+
+    #[test]
+    fn ray_miss_samples_the_directional_skybox() {
+        let scene = Scene::new(rgb(0, 0, 0), 0.0);
+        let ray = Ray::new(Vec3::zeros(), Vec3::new(0.3, 0.8, -0.5)).expect("valid test ray");
+        let expected = scene.skybox.sample(ray.direction);
+
+        assert_eq!(RayTracer::default().trace(&scene, &ray), expected);
     }
 
     #[test]
