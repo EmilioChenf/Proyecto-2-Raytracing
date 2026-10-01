@@ -6,6 +6,10 @@ Experiencia interactiva escrita en Rust que recrea un diorama voxel inspirado en
 
 El recorrido comienza en una isla flotante. Al acercar la cámara se abre la selección tridimensional de personajes; un clic sobre cada oso conduce a su mundo temático.
 
+## Objetivo
+
+Construir un diorama tridimensional con cubos texturizados y renderizarlo mediante un ray tracer propio. La entrega demuestra cámara orbital, zoom, iluminación con sombras, cinco materiales diferenciados, reflexión, refracción y un entorno direccional, sin delegar estas funciones a un motor gráfico.
+
 ## Ejecución
 
 Se recomienda compilar en modo release porque cada píxel lanza rayos contra la escena:
@@ -52,6 +56,14 @@ cargo clippy -- -D warnings
 | Cerrar ventana | Salir de la aplicación |
 
 En la escena principal hay que acercarse hasta el diorama para activar la transición. En selección, el pedestal luminoso indica qué personaje recibirá el clic.
+
+## Cámara orbital
+
+`OrbitCamera` conserva un `target` por escena y calcula su posición a partir de `yaw`, `pitch` y `distance`. El arrastre y las teclas modifican yaw/pitch; la rueda y `W`/`S` modifican distance. Cada escena limita pitch y distancia para impedir que la cámara se invierta, atraviese el diorama o se aleje indefinidamente.
+
+## Selección 3D
+
+En Character Selection, la posición del cursor se transforma con la misma cámara en un rayo mundial. Ese rayo se prueba contra los AABB de Polar, Pardo y Panda; el impacto válido más cercano activa el pedestal y el clic abre el mundo correspondiente. No se utilizan botones ni zonas 2D simuladas.
 
 ## Arquitectura
 
@@ -121,18 +133,22 @@ R0 = ((n1 - n2) / (n1 + n2))²
 R(θ) = R0 + (1 - R0)(1 - cos θ)⁵
 ```
 
+## Skybox
+
+Cuando un rayo no impacta geometría, el trazador devuelve `skybox.sample(ray.direction)`. Cada ambiente combina gradiente hemisférico, suelo, nubes procedurales, halo y disco solar; por tanto, el color depende de la dirección tridimensional del rayo y no de una imagen 2D fija ni de un color constante.
+
 ## Materiales
 
-Todos los materiales tienen albedo, textura, specular, transparencia, reflectividad e índice de refracción. La tabla resume los materiales principales; la paleta añade variantes de follaje, tierra, nieve, pelaje, bambú y emisión.
+Todos los materiales tienen albedo, textura, specular, transparencia, reflectividad e índice de refracción. Grass, Stone, Wood, Metal e Ice son los cinco materiales seleccionados para la rúbrica: sus texturas procedurales y sus configuraciones ópticas son diferentes. La tabla también documenta Water, Glass y Snow.
 
 | Material | Textura | Albedo aproximado | Specular | Transparency | Reflectivity | IOR |
 |---|---|---:|---:|---:|---:|---:|
-| Grass | Checker | `#4A7E2D` | 0.15 | 0.00 | 0.00 | 1.00 |
-| Stone | Speckled | `#747674` | 0.18 | 0.00 | 0.04 | 1.00 |
-| Wood | Grain | `#8B4F26` | 0.22 | 0.00 | 0.02 | 1.00 |
+| Grass | Checker | `#3C842A` | 0.15 | 0.00 | 0.00 | 1.00 |
+| Stone | Speckled | `#60686F` | 0.18 | 0.00 | 0.04 | 1.00 |
+| Wood | Grain | `#9D4E1F` | 0.22 | 0.00 | 0.02 | 1.00 |
 | Metal | Checker | `#767E89` | 1.00 | 0.00 | 0.68 | 1.00 |
-| Ice | Checker | `#A5E0EF` | 0.95 | 0.78 | 0.28 | 1.31 |
-| Water | Ripples | `#2E8BAD` | 0.90 | 0.72 | 0.22 | 1.333 |
+| Ice | Checker | `#7DD2EE` | 0.98 | 0.84 | 0.24 | 1.31 |
+| Water | Ripples | `#187EB5` | 0.90 | 0.72 | 0.22 | 1.333 |
 | Glass | Solid | `#CDEBEB` | 1.00 | 0.82 | 0.20 | 1.50 |
 | Snow | Speckled | `#EBF4F4` | 0.35 | 0.00 | 0.10 | 1.00 |
 
@@ -158,9 +174,13 @@ Bosque cálido con cabaña, sendero, cerca, piedra, madera, metal, ventanas y fa
 
 Bosque de bambú segmentado, arroyo, puente de madera, camino de losas, árboles, rocas y linternas.
 
-## Rendimiento
+## Optimización
 
-Las escenas construyen un BVH por mediana con hojas pequeñas. En la muestra de desarrollo de 83 cubos y 32,400 píxeles, el tiempo bajó de aproximadamente 0.077 s a 0.025 s, manteniendo exactamente los mismos píxeles. El BVH se reconstruye al rotar el personaje, no por cada rayo.
+Las escenas construyen un BVH por mediana con hojas de hasta cuatro cubos. El framebuffer se divide en franjas y se renderiza en paralelo con hilos con alcance; una prueba compara el resultado completo contra la ruta serial. El BVH se reconstruye cuando cambia la geometría del personaje, no por cada rayo ni por cada píxel.
+
+## Dependencias
+
+El proyecto usa únicamente `minifb 0.26.0` para ventana, input y presentación del framebuffer, y `nalgebra-glm 0.18.0` para vectores y operaciones matemáticas. Ninguna dependencia genera escenas, intersecciones, BVH, iluminación, sombras, reflexión, refracción ni ray tracing; todas esas funciones están implementadas en `src/`.
 
 ## Referencias visuales
 
