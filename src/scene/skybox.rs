@@ -19,9 +19,9 @@ impl Skybox {
     #[must_use]
     pub fn main_world() -> Self {
         Self {
-            zenith: rgb(32, 92, 190),
-            horizon: rgb(160, 190, 225),
-            ground: rgb(20, 35, 85),
+            zenith: rgb(24, 72, 172),
+            horizon: rgb(104, 174, 224),
+            ground: rgb(18, 31, 76),
             sun_direction: Vec3::new(-0.7, 0.65, 0.3).normalize(),
             sun_color: rgb(255, 226, 174),
             sun_strength: 2.2,
@@ -32,9 +32,9 @@ impl Skybox {
     #[must_use]
     pub fn polar() -> Self {
         Self {
-            zenith: rgb(43, 105, 176),
-            horizon: rgb(169, 220, 242),
-            ground: rgb(31, 57, 88),
+            zenith: rgb(31, 82, 166),
+            horizon: rgb(126, 204, 234),
+            ground: rgb(25, 48, 82),
             sun_direction: Vec3::new(-0.5, 0.8, 0.2).normalize(),
             sun_color: rgb(218, 245, 255),
             sun_strength: 1.8,
@@ -45,9 +45,9 @@ impl Skybox {
     #[must_use]
     pub fn forest() -> Self {
         Self {
-            zenith: rgb(45, 108, 188),
-            horizon: rgb(255, 177, 101),
-            ground: rgb(27, 48, 27),
+            zenith: rgb(31, 79, 158),
+            horizon: rgb(238, 132, 64),
+            ground: rgb(24, 43, 24),
             sun_direction: Vec3::new(-0.8, 0.55, 0.25).normalize(),
             sun_color: rgb(255, 190, 105),
             sun_strength: 2.6,
@@ -58,9 +58,9 @@ impl Skybox {
     #[must_use]
     pub fn bamboo() -> Self {
         Self {
-            zenith: rgb(67, 145, 193),
-            horizon: rgb(205, 230, 153),
-            ground: rgb(24, 56, 31),
+            zenith: rgb(43, 115, 179),
+            horizon: rgb(161, 210, 114),
+            ground: rgb(20, 51, 28),
             sun_direction: Vec3::new(-0.4, 0.75, -0.3).normalize(),
             sun_color: rgb(242, 235, 171),
             sun_strength: 2.0,
@@ -80,16 +80,19 @@ impl Skybox {
             self.horizon * (1.0 - blend) + self.ground * blend
         };
         let cloud = if height > 0.0 && self.cloud_strength > 0.0 {
-            ((cloud_noise(normalized) - 0.48) * 3.2).clamp(0.0, 1.0)
-                * (1.0 - height).powi(2)
+            let middle_sky = (height * (1.0 - height)).max(0.0).sqrt() * 2.0;
+            ((cloud_noise(normalized) - 0.28) * 1.8).clamp(0.0, 1.0)
+                * middle_sky
                 * self.cloud_strength
         } else {
             0.0
         };
-        let cloud_color = rgb(255, 244, 232);
+        let cloud_color = rgb(242, 244, 238);
         let base = base * (1.0 - cloud) + cloud_color * cloud;
-        let sun = normalized.dot(&self.sun_direction).max(0.0).powf(384.0) * self.sun_strength;
-        base + self.sun_color * sun
+        let sun_alignment = normalized.dot(&self.sun_direction).max(0.0);
+        let sun = sun_alignment.powf(384.0) * self.sun_strength;
+        let sun_glow = sun_alignment.powf(10.0) * self.sun_strength * 0.16;
+        base + self.sun_color * (sun + sun_glow)
     }
 }
 
@@ -134,5 +137,14 @@ mod tests {
         let upper = sky.sample(Vec3::new(0.0, 1.0, 0.0));
         let lower = sky.sample(Vec3::new(0.0, -1.0, 0.0));
         assert_ne!(upper, lower);
+    }
+
+    #[test]
+    fn sun_glow_depends_on_ray_direction() {
+        let sky = Skybox::main_world();
+        let toward_sun = sky.sample(sky.sun_direction);
+        let away_from_sun = sky.sample(-sky.sun_direction);
+
+        assert!(toward_sun.norm() > away_from_sun.norm());
     }
 }
