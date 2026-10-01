@@ -190,4 +190,4 @@ Los conceptos de rayos, materiales, cámara orbital, iluminación, sombras y ref
 
 ## Video de demostración
 
-[Pendiente colocar enlace]
+https://youtu.be/SnJUv8Phu0k 
